@@ -1,0 +1,146 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		content="width=device-width,initial-scale=1.0" />
+	<title>Correlation Coefficient Calculator</title>
+	<link href=
+"https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+		rel="stylesheet" />
+</head>
+
+<body class="bg-gray-200 flex flex-col items-center
+			justify-center min-h-screen">
+	<div class="max-w-md w-full bg-white p-8 rounded-lg
+				shadow-lg border-2 border-green-500">
+		<h1 class="text-3xl font-bold text-center mb-8">
+			Correlation Coefficient Calculator
+		</h1>
+		<div class="mb-4">
+			<label for="x-values" class="block text-sm 
+			font-medium text-gray-700 mb-2">
+				Enter X Values (Separated by Commas)</label>
+			<input type="text"
+				id="x-values"
+				class="w-full border border-gray-300 rounded-md
+						py-2 px-3 focus:outline-none 
+						focus:border-blue-500" />
+		</div>
+		<div class="mb-4">
+			<label for="y-values" class="block text-sm font-medium
+			text-gray-700 mb-2">Enter Y Values (Separated by Commas)</label>
+			<input type="text"
+				id="y-values"
+				class="w-full border border-gray-300 
+						rounded-md py-2 px-3 focus:outline-none 
+						focus:border-blue-500" />
+		</div>
+		<div class="flex justify-between items-center mb-4">
+			<button id="calculate-btn"
+					class="w-2/5 bg-blue-500 
+						text-white rounded-md
+							py-2 px-4 hover:bg-blue-600 
+						focus:outline-none">
+				Calculate
+			</button>
+			<button id="reset-btn"
+					class="w-2/5 bg-red-500 text-white 
+						rounded-md py-2 px-4 
+						hover:bg-red-600 focus:outline-none">
+				Reset
+			</button>
+		</div>
+		<div id="result" class="text-center text-lg
+		font-semibold mt-4"></div>
+		<div id="plot" class="mt-8"></div>
+	</div>
+	<script>
+		document.getElementById("calculate-btn")
+			.addEventListener("click", () => {
+				const xValues = document
+					.getElementById("x-values")
+					.value.split(",")
+					.map(parseFloat);
+				const yValues = document
+					.getElementById("y-values")
+					.value.split(",")
+					.map(parseFloat);
+				try {
+					const correlationCoefficient = 
+						calculateCorrelationCoefficient(
+							xValues,
+							yValues
+						);
+					document.getElementById(
+						"result"
+					).textContent = `Correlation Coefficient: 
+									${correlationCoefficient.toFixed(2)}`;
+					plotScatterPlot(xValues, yValues);
+				} catch (error) {
+					document.getElementById("result")
+							.textContent = error.message;
+					document.getElementById("plot").innerHTML = "";
+				}
+			});
+		document.getElementById("reset-btn").addEventListener("click", () => {
+			document.getElementById("x-values").value = "";
+			document.getElementById("y-values").value = "";
+			document.getElementById("result").textContent = "";
+			document.getElementById("plot").innerHTML = "";
+		});
+		function calculateCorrelationCoefficient(xValues, yValues) {
+			if (xValues.length !== yValues.length || xValues.length < 2) {
+				throw new Error(
+					`X and Y values must have the 
+					same length and contain at least 2 values.`
+				);
+			}
+			const n = xValues.length;
+			const meanX = xValues.reduce((sum, x) => sum + x, 0) / n;
+			const meanY = yValues.reduce((sum, y) => sum + y, 0) / n;
+			let numerator = 0;
+			let denominatorX = 0;
+			let denominatorY = 0;
+			for (let i = 0; i < n; i++) {
+				const deviationX = xValues[i] - meanX;
+				const deviationY = yValues[i] - meanY;
+				numerator += deviationX * deviationY;
+				denominatorX += deviationX ** 2;
+				denominatorY += deviationY ** 2;
+			}
+			const denominator = Math.sqrt(denominatorX * denominatorY);
+			if (denominator === 0) {
+				throw new Error(
+					`The denominator is zero, 
+					resulting in undefined correlation coefficient.`
+				);
+			}
+			const correlationCoefficient = numerator / denominator;
+			return correlationCoefficient;
+		}
+		function plotScatterPlot(xValues, yValues) {
+			const plotData = [
+				{
+					x: xValues,
+					y: yValues,
+					mode: "markers",
+					type: "scatter",
+					marker: { color: "blue" },
+				},
+			];
+			const layout = {
+				title: "Scatter Plot",
+				xaxis: { title: "X Values" },
+				yaxis: { title: "Y Values" },
+			};
+			Plotly.newPlot("plot", plotData, layout);
+		}
+	</script>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</body>
+
+</html>
